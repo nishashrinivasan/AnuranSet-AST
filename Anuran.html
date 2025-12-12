@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Anuran Audio Classification and Segmentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    /*Global layout & theme */
+    :root {
+      --bg: #020202;
+      --card-bg: #101010;
+      --border-subtle: #262626;
+      --text-main: #f5f5f5;
+      --text-muted: #b3b3b3;
+      --text-soft: #a0a0a0;
+      --accent: #4fd1c5; /* soft teal */
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.6);
+      --radius-card: 16px;
+      --radius-iframe: 12px;
+      --max-content-width: 960px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #111 0, #020202 55%, #000 100%);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+        Helvetica, Arial, sans-serif;
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 48px 20px 64px;
+    }
+
+    .title-block {
+      text-align: center;
+      margin: 0 auto 32px;
+      padding-bottom: 16px;
+      width: 100%;
+      max-width: var(--max-content-width);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(30px, 4.4vw, 44px);
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+
+    .title-subline {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto 4px;
+    }
+
+    .title-subline span {
+      color: var(--accent);
+    }
+
+    /* Main content column: text + visuals share the same left edge */
+    .content {
+      width: 100%;
+      max-width: var(--max-content-width);
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin: 0 0 18px;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 40px 0 10px;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .section-tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .section-intro {
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.6;
+      margin: 0 0 22px;
+    }
+
+    .viz-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .viz-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border-subtle);
+      padding: 18px 18px 22px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .viz-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+
+    .viz-meta {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .viz-description {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    iframe {
+      width: 100%;
+      border: none;
+      border-radius: var(--radius-iframe);
+      overflow: hidden;
+      background: #000;
+      display: block;
+    }
+
+    hr.section-divider {
+      border: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      margin: 40px 0;
+    }
+
+    footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .refs-list {
+      font-size: 13px;
+      color: var(--text-soft);
+      line-height: 1.6;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 720px) {
+      .viz-card {
+        padding: 16px 14px 18px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+      }
+
+      .section-intro,
+      .viz-description {
+        font-size: 13px;
+      }
+      /*Results callout*/
+.results-callout {
+  border: 1px solid rgba(79, 209, 197, 0.35);
+  background: rgba(79, 209, 197, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 14px 0 0;
+}
+
+.results-callout .results-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+}
+
+.results-callout .results-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.results-callout ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.results-callout b {
+  color: var(--text-main);
+}
+
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Title / Hero -->
+    <div class="title-block">
+      <div class="eyebrow">Ecoacoustic Model Report</div>
+      <h1>Anuran Audio Classification and Segmentation</h1>
+    </div>
+
+    <!-- Main content column -->
+    <div class="content">
+      <!-- Expanded project narrative informed by Nature article -->
+      <p class="subtitle">
+        Monitoring biodiversity through sound is both an ecological and computational challenge. Manual
+        surveys and expert listening do not scale to the volume of data produced by passive acoustic
+        monitoring (PAM), especially in species-rich Neotropical soundscapes. This project explores how
+        modern machine-listening models can support that work by automatically identifying frog (anuran)
+        species and summarizing their calling behavior over time.
+      </p>
+
+      <p class="subtitle">
+        A key reference point is the open dataset described by Cañas et&nbsp;al. (2023), which provides
+        a benchmark collection of Neotropical anuran calls recorded in Brazilian biomes. The dataset
+        combines strong (call-level) and weak (segment-level) labels and includes overlapping calls,
+        environmental noise, and a long-tailed distribution of species frequencies—conditions that match
+        real conservation problems rather than idealized lab settings. This context motivates the design
+        of my experiments: any model that performs well here is more likely to be useful in practice.
+      </p>
+
+      <p class="subtitle">
+        In this project I document the visual meta-analysis of my model - a <b>Transformer-based Audio Spectrogram Transformer (AST)</b>
+        which analyses the existing AnuraSet.
+        Audio is converted to time–frequency representations
+        and framed as a multi-label species classification task, because a single segment may contain
+        multiple overlapping calls. While the ResNet leverages local convolutional filters, AST treats
+        spectrogram patches as tokens and applies self-attention, allowing it to model long-range
+        dependencies and subtle temporal–spectral structure that are common in frog vocalizations.
+      </p>
+
+      <p class="subtitle">
+        The visualizations below are designed to answer three questions in sequence: <i>Does AST actually
+        perform better, especially under class imbalance?</i> <i>What kind of representation and error
+        structure does it learn?</i> and <i>Do its predictions produce ecologically plausible temporal
+        patterns?</i> Performance plots link F1 scores to class frequency, embedding views show how calls
+        are arranged in feature space, confusion matrices reveal which taxa are systematically mixed up,
+        and time-of-day heatmaps and line plots translate predictions into diel activity profiles. Layout,
+        alignment, and card styling are intentionally minimal so the viewer’s attention stays on the
+        structure of the data and not on UI chrome.
+        
+      </p>
+
+      <!-- 
+           Section 1: Model performance
+           -->
+      <div class="section-tag">
+        <span class="section-tag-dot"></span> PERFORMANCE
+      </div>
+      <h2>1. Model Performance and Class Imbalance</h2>
+      <p class="section-intro">
+        First, I verify that the AST model is actually better than a ResNet baseline, especially for
+        underrepresented species. These views highlight how performance shifts across the species spectrum
+        and how sensitive each model is to class imbalance.
+      </p>
+
+      <div class="viz-grid">
+        <div class="viz-card">
+          <div class="viz-meta">Species-level metrics · AST vs imbalance</div>
+          <h3>1.1 Class Imbalance vs Performance</h3>
+          <p class="viz-description">
+            This visualization plots per-species performance against class frequency. AST maintains higher
+            performance for rare species than a CNN, suggesting better generalization and more robust handling
+            of limited training samples—a critical requirement for biodiversity datasets where rare species
+            matter the most.
+          </p>
+          <iframe
+            height="684"
+            src="https://observablehq.com/embed/fe8c99e9d6d7cf03?cells=imbalancePerfPlot">
+          </iframe>
+        </div>
+        
+
+        <div class="viz-card">
+          <div class="viz-meta">Distribution of F1 across taxa</div>
+          <h3>1.2 Per-Species F1 Distribution</h3>
+          <p class="viz-description">
+            The F1 strip plot shows how performance is spread across species. AST tends to compress the
+            long tail of low-performing species upward, pulling many “hard” species into a usable prediction
+            range. This indicates that the Transformer captures richer spectral–temporal structure than
+            the ResNet baseline.
+          </p>
+          <iframe
+            height="373"
+            src="https://observablehq.com/embed/fe8c99e9d6d7cf03?cells=f1StripPlot">
+          </iframe>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- 
+           Section 2: Representation & error structure
+            -->
+      <div class="section-tag">
+        <span class="section-tag-dot"></span> REPRESENTATION
+      </div>
+      <h2>2. Learned Representation and Error Structure</h2>
+      <p class="section-intro">
+        To understand <i>why</i> AST outperforms ResNet, I examine the embedding geometry and the confusion
+        structure. If the model is learning meaningful features, I expect clear structure in the latent
+        space and confusions that match real acoustic similarity.
+      </p>
+
+      <div class="viz-grid">
+        <div class="viz-card">
+          <div class="viz-meta">Embedding space · Voronoi layout</div>
+          <h3>2.1 Species Embedding Map (Voronoi)</h3>
+          <p class="viz-description">
+            The Voronoi regions reveal AST’s latent-space organization. Species with similar calls fall into
+            neighboring cells, while acoustically distinct ones occupy separate regions. Compared to a CNN
+            feature space, AST produces tighter, more semantically coherent clusters—suggesting it has learned
+            a geometry that aligns well with bioacoustic intuition.
+          </p>
+          <iframe
+            height="674"
+            src="https://observablehq.com/embed/fe8c99e9d6d7cf03?cells=speciesVoronoiPlot">
+          </iframe>
+        </div>
+
+        <div class="viz-card">
+          <div class="viz-meta">Error analysis · species confusions</div>
+          <h3>2.2 Confusion Matrix</h3>
+          <p class="viz-description">
+            The confusion matrix shows which species are being mistaken for which. AST’s errors are
+            concentrated among species with similar call structures, instead of being scattered randomly.
+            That shift from noisy to interpretable confusions suggests cleaner decision boundaries and
+            makes the model’s behavior easier to trust in ecological applications.
+          </p>
+          <iframe
+            height="1053"
+            src="https://observablehq.com/embed/fe8c99e9d6d7cf03?cells=confusionMatrixPlot">
+          </iframe>
+        </div>
+
+        <div class="viz-card">
+          <div class="viz-meta">Global structure · UMAP of AST features</div>
+          <h3>2.3 UMAP Projection of AST Embeddings</h3>
+          <p class="viz-description">
+            This UMAP projection visualizes the global shape of the AST embedding space. I see reasonably
+            compact clusters for many taxa, with smooth transitions where calls are legitimately similar.
+            Compared to the ResNet baseline, AST’s space looks more structured, suggesting the model has
+            discovered consistent species-level signatures across sites and noise conditions.
+          </p>
+          <iframe
+            height="873"
+            src="https://observablehq.com/embed/fe8c99e9d6d7cf03@726?cells=umapZoomPlot">
+          </iframe>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- 
+           Section 3: Temporal Activity & Segmentation Behavior
+            -->
+      <div class="section-tag">
+        <span class="section-tag-dot"></span> TEMPORAL PATTERNS
+      </div>
+      <h2>3. Temporal Activity Patterns and Segmentation</h2>
+      <p class="section-intro">
+        Finally, I examine how AST outputs translate into time-of-day patterns and site-level behavior.
+        Beyond classification accuracy, a useful ecoacoustic model should recover known diel rhythms and
+        reveal when and where species are active.
+      </p>
+
+      <div class="viz-grid">
+        <div class="viz-card">
+          <div class="viz-meta">Interactive filters · site & species</div>
+          <h3>3.1 Multi-Site Activity Heatmap with Filters</h3>
+          <p class="viz-description">
+            This combined view shows activity across sites and species, controlled by interactive filters.
+            For a chosen site–species pair, the heatmap reveals bursts of calling activity over time.
+            The patterns I see are coherent and stable rather than noisy, which suggests that AST-based
+            segmentation is capturing genuine ecological signal that could be used for monitoring or
+            automatic alerting.
+          </p>
+          <iframe
+            height="1058"
+            src="https://observablehq.com/embed/fe8c99e9d6d7cf03?cells=viewof+siteFilter%2Cviewof+speciesFilter%2CactivityHeatmap">
+          </iframe>
+        </div>
+
+        <div class="viz-card">
+          <div class="viz-meta">Per-species diel behavior</div>
+          <h3>3.2 Species Time-of-Day Heatmap</h3>
+          <p class="viz-description">
+            This heatmap focuses on a single species at a time to show how its calling intensity changes
+            over the 24-hour cycle. As I scroll through different taxa, clear diel signatures appear:
+            strongly nocturnal species, dawn–dusk specialists, and more evenly active species. The fact
+            that these patterns emerge directly from model predictions indicates that AST has internalized
+            meaningful temporal structure.
+          </p>
+          <iframe
+            height="1096"
+            src="https://observablehq.com/embed/fe8c99e9d6d7cf03?cells=viewof+speciesFilter2%2CspeciesTODHeatmap">
+          </iframe>
+        </div>
+
+        <div class="viz-card">
+          <div class="viz-meta">Smoothed diel profile · per species</div>
+          <h3>3.3 Time-of-Day Line Plot</h3>
+          <p class="viz-description">
+            The time-of-day line plot smooths those heatmap patterns into a simple curve, making peaks
+            and troughs obvious at a glance—for example, sharp nocturnal peaks or subdued mid-day activity.
+            What I find important is that these curves rarely look flat or random: they line up with
+            expected ecological rhythms, which is a strong signal that the AST model is learning more
+            than just label noise.
+          </p>
+          <iframe
+            height="741"
+            src="https://observablehq.com/embed/fe8c99e9d6d7cf03?cells=todLinePlot">
+          </iframe>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- 
+           Conclusion
+            -->
+      <div class="section-tag">
+        <span class="section-tag-dot"></span> SYNTHESIS
+      </div>
+      <h2>4. Conclusion</h2>
+      <p class="section-intro">
+        Taken together, these results suggest that Audio Spectrogram Transformer models are a strong fit
+        for real-world ecoacoustic monitoring. AST not only improves headline metrics relative to a ResNet
+        baseline, but does so in the places that matter most: rare species, noisy conditions, and complex
+        temporal structure. The embedding views and confusion patterns show that it learns a coherent
+        acoustic space rather than memorizing labels, while the time-of-day visualizations demonstrate that
+        its predictions recover plausible diel rhythms across sites and taxa. In the spirit of open
+        benchmarks like the Neotropical anuran dataset by Cañas et&nbsp;al., this work points toward a
+        pipeline where transformer-based models, coupled with transparent visual analytics, can move
+        passive acoustic monitoring closer to an operational tool for conservation rather than a purely
+        experimental technique.
+      </p>
+
+      <hr class="section-divider" />
+
+      <!-- 
+           References
+            -->
+      <div class="section-tag">
+        <span class="section-tag-dot"></span> REFERENCES
+      </div>
+      <h2>References</h2>
+      <div class="refs-list">
+        Cañas, J. S., Toro-Gómez, M. P., Moreira Sugai, L. S., Benítez Restrepo, H. D., Rudas, J.,
+        Posso Bautista, B., et&nbsp;al. 2023. “A Dataset for Benchmarking Neotropical Anuran Calls
+        Identification in Passive Acoustic Monitoring.” <i>Scientific Data</i> 10 (771).
+        https://doi.org/10.1038/s41597-023-02666-2.
+      </div>
+
+      <footer>
+        Audio Spectrogram Transformer vs ResNet · Anuran ecoacoustics study · Interactive report built with Observable
+      </footer>
+    </div>
+  </div>
+</body>
+</html> 

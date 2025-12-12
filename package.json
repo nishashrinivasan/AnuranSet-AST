@@ -1,0 +1,14 @@
+{
+  "name": "fe8c99e9d6d7cf03",
+  "main": "fe8c99e9d6d7cf03@752.js",
+  "version": "752.0.0",
+  "homepage": "https://observablehq.com/d/fe8c99e9d6d7cf03",
+  "author": {
+    "name": "Pratt Institute",
+    "url": "https://observablehq.com/@pratt-institute2"
+  },
+  "type": "module",
+  "peerDependencies": {
+    "@observablehq/runtime": "4 - 5"
+  }
+}
